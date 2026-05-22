@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 # ═════════════════════════════════════════════════════════════════
 # PAGE CONFIG & STYLING
 # ═════════════════════════════════════════════════════════════════
-st.set_page_config(page_title="KostManager", page_icon="🏠", layout="wide")
+st.set_page_config(page_title="MANAJEMEN KOS GAGAL TOBAT", page_icon="🏠", layout="wide")
 
 st.markdown("""
 <style>
