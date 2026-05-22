@@ -398,7 +398,6 @@ elif page == "Penyewa":
                 f"""
                 💰 Total Tagihan Awal: Rp{total:,}
 
-                Status: {status_bayar_awal}
                 """
             )
 
