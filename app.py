@@ -128,9 +128,12 @@ page = menu.split(" ", 1)[1]
 # PAGE: DASHBOARD
 # ════════════════════════════════════════════════════════════════
 if page == "Dashboard":
-    st_autorefresh(interval=2000, key="dashboard_refresh")
+    st_autorefresh(interval=1000, key="dashboard_refresh")
     st.title("Dashboard")
-    conn = get_conn()
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA busy_timeout = 3000;")
     
     total_penyewa = pd.read_sql("SELECT COUNT(*) as n FROM penyewa", conn).iloc[0, 0]
     total_kamar = pd.read_sql("SELECT COUNT(*) as n FROM kamar", conn).iloc[0, 0]
@@ -192,7 +195,7 @@ elif page == "Penyewa":
             c1, c2 = st.columns(2)
             with c1:
                 auto_id_penyewa = generate_next_id("P", "penyewa", "id_penyewa")
-                id_penyewa = st.text_input("ID Penyewa", value=auto_id_penyewa, disabled=True)
+                id_penyewa = st.text_input("ID Penyewa", value=auto_id_penyewa,)
                 nama = st.text_input("Nama")
                 alamat = st.text_input("Alamat")
 
@@ -357,7 +360,7 @@ elif page == "Pembayaran":
         with st.form("form_bayar"):
             c1, c2 = st.columns(2)
             with c1:
-                id_bayar = st.text_input("ID Pembayaran (auto)", value=auto_id_bayar, disabled=True)
+                id_bayar = st.text_input("ID Pembayaran (auto)", value=auto_id_bayar,)
                 kamar_terisi_df = kamar_all_df[kamar_all_df["status"] == "Terisi"]
                 
                 if kamar_terisi_df.empty:
@@ -445,6 +448,8 @@ elif page == "Pembayaran":
                 conn.execute("UPDATE pembayaran SET status_bayar='Lunas' WHERE id_pembayaran=?", (id_tagihan,))
                 conn.commit()
                 conn.close()
+                st.cache_data.clear()
+                
                 st.success(f"Pembayaran {id_tagihan} berhasil diperbarui!")
                 st.rerun()
 
