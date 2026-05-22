@@ -201,9 +201,9 @@ elif page == "Penyewa":
                 st.text_input("Tanggal Keluar (otomatis +30 hari)", value=str(tgl_keluar), disabled=True)
 
             st.markdown("---")
-            st.markdown("#### Pilih Kamar")
+            st.markdown("#### Pilih Kamar 🏠")
             if kamar_df.empty:
-                st.warning("⚠️ Tidak ada kamar tersedia!")
+                st.warning("⚠️ Tidak ada kamar tersedia! Silakan hubungi admin untuk menambah kamar.")
                 kamar_opts = []
                 selected_kamar = None
             else:
@@ -226,8 +226,9 @@ elif page == "Penyewa":
 
             harga_fas = sum(int(r["harga_tambahan"]) for r in fas_selected)
             
-            if selected_kamar and kamar_df is not None:
-                kamar_harga = int(kamar_df[kamar_df['id_kamar'] == kamar_df.iloc[kamar_opts.index(selected_kamar)]['id_kamar']]['harga_dasar'].values[0])
+            if selected_kamar and len(kamar_df) > 0:
+                kamar_idx = kamar_opts.index(selected_kamar)
+                kamar_harga = int(kamar_df.iloc[kamar_idx]['harga_dasar'])
                 total_bayar = kamar_harga + harga_fas
                 st.info(f"💰 **Total Pembayaran: {format_currency(total_bayar)}** (Kamar: {format_currency(kamar_harga)} + Fasilitas: {format_currency(harga_fas)})")
             else:
