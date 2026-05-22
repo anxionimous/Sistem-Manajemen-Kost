@@ -1,6 +1,3 @@
-bash
-
-cat > /home/claude/kost-app/app.py << 'ENDOFFILE'
 import streamlit as st
 import sqlite3
 import pandas as pd
@@ -306,7 +303,4 @@ elif page == "Analisis":
     """, conn)
     if not df.empty: st.dataframe(df, use_container_width=True)
     conn.close()
-ENDOFFILE
-echo "Done"
 
-ini udah selesai belum app.py nya
