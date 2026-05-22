@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 from datetime import datetime, timedelta
+from streamlit_autorefresh import st_autorefresh
 
 # ═════════════════════════════════════════════════════════════════
 # PAGE CONFIG & STYLING
@@ -127,6 +128,7 @@ page = menu.split(" ", 1)[1]
 # PAGE: DASHBOARD
 # ════════════════════════════════════════════════════════════════
 if page == "Dashboard":
+    st_autorefresh(interval=2000, key="dashboard_refresh")
     st.title("Dashboard")
     conn = get_conn()
     
