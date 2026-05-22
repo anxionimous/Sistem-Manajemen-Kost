@@ -107,34 +107,81 @@ elif page == "Penyewa":
     st.title("Manajemen Penyewa")
     tab1, tab2 = st.tabs(["➕ Tambah Penyewa", "🗑️ Hapus Penyewa"])
 
-    with tab1:
-        with st.form("form_penyewa"):
-            c1, c2 = st.columns(2)
-            with c1:
-                id_penyewa = st.text_input("ID Penyewa", placeholder="P051")
-                nama       = st.text_input("Nama")
-                alamat     = st.text_input("Alamat")
-            with c2:
-                no_hp      = st.text_input("No HP")
-                tgl_masuk  = st.date_input("Tanggal Masuk", value=datetime.today())
-                tgl_keluar = tgl_masuk + timedelta(days=30)
-                st.text_input("Tanggal Keluar (otomatis +30 hari)", value=str(tgl_keluar), disabled=True)
-            submitted = st.form_submit_button("💾 Simpan Penyewa", use_container_width=True)
-            if submitted:
-                if not id_penyewa or not nama:
-                    st.error("ID Penyewa dan Nama wajib diisi!")
-                else:
-                    try:
-                        conn = get_conn()
-                        conn.execute("INSERT OR IGNORE INTO penyewa VALUES (?,?,?,?,?,?)",
-                            (id_penyewa, nama, alamat, no_hp, str(tgl_masuk), str(tgl_keluar)))
-                        conn.commit(); conn.close()
-                        st.success(f"✅ Penyewa **{nama}** berhasil ditambahkan!")
-                    except Exception as e:
-                        st.error(f"Error: {e}")
-        conn = get_conn()
-        st.dataframe(pd.read_sql("SELECT * FROM penyewa", conn), use_container_width=True)
-        conn.close()
+   with tab1:
+    conn = get_conn()
+    kamar_df     = pd.read_sql("SELECT * FROM kamar", conn)
+    fasilitas_df = pd.read_sql("SELECT * FROM fasilitas", conn)
+    conn.close()
+
+    with st.form("form_penyewa"):
+        c1, c2 = st.columns(2)
+        with c1:
+            id_penyewa = st.text_input("ID Penyewa", placeholder="P051")
+            nama       = st.text_input("Nama")
+            alamat     = st.text_input("Alamat")
+        with c2:
+            no_hp      = st.text_input("No HP")
+            tgl_masuk  = st.date_input("Tanggal Masuk", value=datetime.today())
+            tgl_keluar = tgl_masuk + timedelta(days=30)
+            st.text_input("Tanggal Keluar (otomatis +30 hari)", value=str(tgl_keluar), disabled=True)
+
+        st.markdown("---")
+        st.markdown("**Kamar & Pembayaran Awal:**")
+        c3, c4 = st.columns(2)
+        with c3:
+            kamar_opts   = [f"Kamar {r['no_kamar']} — Rp{int(r['harga_dasar']):,}" for _, r in kamar_df.iterrows()]
+            pilih_k      = st.selectbox("Pilih Kamar", kamar_opts)
+            id_kamar_val = kamar_df.iloc[kamar_opts.index(pilih_k)]["id_kamar"]
+            harga_kamar  = int(kamar_df.iloc[kamar_opts.index(pilih_k)]["harga_dasar"])
+        with c4:
+            id_bayar_awal = st.text_input("ID Pembayaran Awal", placeholder="PB068")
+
+        st.markdown("**Fasilitas Tambahan (opsional):**")
+        fas_cols = st.columns(4)
+        fas_selected = []
+        for i, (_, row) in enumerate(fasilitas_df.iterrows()):
+            with fas_cols[i % 4]:
+                if st.checkbox(f"{row['nama_fasilitas']} (+Rp{int(row['harga_tambahan']):,})", key=f"fas_penyewa_{i}"):
+                    fas_selected.append(row)
+
+        harga_fas = sum(int(r["harga_tambahan"]) for r in fas_selected)
+        total     = harga_kamar + harga_fas
+        st.info(f"💰 **Total Tagihan Awal: Rp{total:,}**")
+
+        submitted = st.form_submit_button("💾 Simpan Penyewa", use_container_width=True)
+        if submitted:
+            if not id_penyewa or not nama:
+                st.error("ID Penyewa dan Nama wajib diisi!")
+            elif not id_bayar_awal:
+                st.error("ID Pembayaran Awal wajib diisi!")
+            else:
+                try:
+                    conn = get_conn()
+                    # Simpan penyewa
+                    conn.execute(
+                        "INSERT OR IGNORE INTO penyewa VALUES (?,?,?,?,?,?)",
+                        (id_penyewa, nama, alamat, no_hp, str(tgl_masuk), str(tgl_keluar))
+                    )
+                    # Buat pembayaran awal otomatis dengan status Belum Lunas
+                    conn.execute(
+                        "INSERT OR IGNORE INTO pembayaran VALUES (?,?,?,?,?,?)",
+                        (id_bayar_awal, id_penyewa, id_kamar_val, str(tgl_masuk), total, "Belum Lunas")
+                    )
+                    # Simpan fasilitas yang dipilih ke detail_kamar
+                    for r in fas_selected:
+                        conn.execute(
+                            "INSERT OR IGNORE INTO detail_kamar VALUES (?,?,?)",
+                            (f"DK{id_kamar_val}{r['id_fasilitas']}", id_kamar_val, r["id_fasilitas"])
+                        )
+                    conn.commit()
+                    conn.close()
+                    st.success(f"✅ Penyewa **{nama}** ditambahkan + tagihan **{id_bayar_awal}** dibuat (Rp{total:,} — Belum Lunas)!")
+                except Exception as e:
+                    st.error(f"Error: {e}")
+
+    conn = get_conn()
+    st.dataframe(pd.read_sql("SELECT * FROM penyewa", conn), use_container_width=True)
+    conn.close()
 
     with tab2:
         conn = get_conn()
