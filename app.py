@@ -189,7 +189,7 @@ elif page == "Penyewa":
 
             harga_fas = sum(int(r["harga_tambahan"]) for r in fas_selected)
             total     = harga_kamar + harga_fas
-            st.info(f"💰 **Total Tagihan Awal: Rp{total:,}** (Status: {status_bayar_awal})")
+            st.info(f"💰 **Total Tagihan Awal: Rp{total:,}** ")
 
             submitted = st.form_submit_button("💾 Simpan Penyewa", use_container_width=True)
             if submitted:
