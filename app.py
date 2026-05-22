@@ -81,7 +81,7 @@ def generate_next_id(prefix, table, column):
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 🏠 KostManager")
+    st.markdown("## MANAJEMEN KOST GAGAL TOBAT")
     st.markdown("---")
     menu = st.radio("Navigasi", [
         "📊 Dashboard",
