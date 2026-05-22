@@ -1,5 +1,4 @@
-Kode KostManager - Versi Rapih
-Dokumen ini berisi source code yang telah dirapikan formatting dasar tanpa mengubah logic program.
+
 import streamlit as st
 import sqlite3
 import pandas as pd
