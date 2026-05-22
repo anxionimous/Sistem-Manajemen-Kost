@@ -1,4 +1,3 @@
-
 import streamlit as st
 import sqlite3
 import pandas as pd
@@ -200,41 +199,38 @@ elif page == "Penyewa":
 
              submitted = st.form_submit_button("💾 Simpan Penyewa", use_container_width=True)
 
-                         if submitted:
-                if not id_penyewa or not nama:
-                    st.error("ID Penyewa dan Nama wajib diisi!")
-                else:
-                    try:
-                        conn = get_conn()
+             if submitted:
+                 if not id_penyewa or not nama:
+                     st.error("ID Penyewa dan Nama wajib diisi!")
+                 else:
+                     try:
+                         conn = get_conn()
 
-                        # insert penyewa saja (TANPA kamar)
-                        conn.execute(
-                            "INSERT OR IGNORE INTO penyewa VALUES (?,?,?,?,?,?)",
-                            (id_penyewa, nama, alamat, no_hp, str(tgl_masuk), str(tgl_keluar))
-                        )
+                         # insert penyewa saja (TANPA kamar)
+                         conn.execute(
+                             "INSERT OR IGNORE INTO penyewa VALUES (?,?,?,?,?,?)",
+                             (id_penyewa, nama, alamat, no_hp, str(tgl_masuk), str(tgl_keluar))
+                         )
 
-                        # fasilitas detail tetap disimpan (opsional)
-                        for r in fas_selected:
-                            detail_id = f"DK{id_penyewa}{r['id_fasilitas']}"
-                            conn.execute(
-                                "INSERT OR IGNORE INTO detail_kamar VALUES (?,?,?)",
-                                (detail_id, None, r["id_fasilitas"])
-                            )
+                    # fasilitas detail tetap disimpan (opsional)
+                         for r in fas_selected:
+                             detail_id = f"DK{id_penyewa}{r['id_fasilitas']}"
+                             conn.execute(
+                                 "INSERT OR IGNORE INTO detail_kamar VALUES (?,?,?)",
+                                 (detail_id, None, r["id_fasilitas"])
+                             )
 
-                        conn.commit()
-                        conn.close()
+                         conn.commit()
+                         conn.close()
 
-                        st.success(f"✅ Penyewa **{nama}** berhasil ditambahkan!")
-                        st.rerun()
+                         st.success(f"✅ Penyewa **{nama}** berhasil ditambahkan!")
+                         st.rerun()
 
-                    except Exception as e:
-                        st.error(f"Error: {e}")
+                     except Exception as e:
+                         st.error(f"Error: {e}")
 
         conn = get_conn()
-        st.dataframe(
-            pd.read_sql("SELECT * FROM penyewa", conn),
-            use_container_width=True
-        )
+        st.dataframe(pd.read_sql("SELECT * FROM penyewa", conn), use_container_width=True)
         conn.close()
 
     with tab2:
